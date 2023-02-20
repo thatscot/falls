@@ -1,53 +1,56 @@
-import { useState, useEffect } from 'react'
-import reactLogo from './assets/react.svg'
-import './App.css'
+import { useState, useEffect } from 'react';
+import reactLogo from './assets/react.svg';
+import './App.css';
 
 function App() {
-  const [count, setCount] = useState(0)
   const [stuff, setStuff] = useState({});
+  const [mathCalc, setMathCalc] = useState(0);
 
-  useEffect( () => {
-  
-    window.addEventListener('deviceMotion', (event) => {
-      setStuff(event)
-      console.log(event);
-    })
+  useEffect(() => {
+    const { x, y, z } = stuff;
 
-    return () => {
-        window.removeEventListener('deviceMotion', (event) => {
-          setStuff(event)
-          console.log(event)
-        })
+    calc(Math.sqrt(x * x + y * y + z * z));
+  }, [stuff]);
+
+  const calc = (accel) => {
+    console.log({ accel });
+    console.log({ mathCalc });
+    const { x, y, z } = stuff;
+    if (accel > mathCalc) {
+      setMathCalc(Math.sqrt(x * x + y * y + z * z));
     }
-  }, [])
-  
+  };
+
+  const doDeviceMotion = () => {
+    if (
+      typeof DeviceMotionEvent !== 'undefined' &&
+      typeof DeviceMotionEvent.requestPermission === 'function'
+    ) {
+      DeviceMotionEvent.requestPermission().then((response) => {
+        if (response === 'granted') {
+          window.addEventListener('devicemotion', (event) => {
+            setStuff(event.accelerationIncludingGravity);
+            console.log(event.accelerationIncludingGravity);
+          });
+        }
+      });
+    } else {
+      window.addEventListener('devicemotion', (event) => {
+        setStuff(event.accelerationIncludingGravity);
+        console.log(event.accelerationIncludingGravity);
+      });
+    }
+  };
 
   return (
     <div className="App">
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src="/vite.svg" className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://reactjs.org" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-
       <div> {JSON.stringify(stuff)}</div>
+      <div> {mathCalc} </div>
       <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
+        <button onClick={() => doDeviceMotion()}>Click me</button>
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
